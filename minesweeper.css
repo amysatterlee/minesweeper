@@ -3,6 +3,7 @@
   height: 50px;
   display: inline-block;
   margin: 2px;
+  text-align: center;
 }
 
 .blueSquare {
@@ -11,4 +12,32 @@
 
 .redSquare {
   background-color: red;
+}
+
+.greenSquare {
+  background-color: green;
+}
+
+.bombSquare {
+  background-color: red;
+}
+
+.emptySquare {
+  background-color: grey;
+}
+
+.hidden {
+  visibility: hidden;
+}
+
+.squareText {
+  display: inline-block;
+}
+
+.boardGameRow {
+  display: inline-block;
+}
+
+.inline {
+  display: inline-block;
 }
