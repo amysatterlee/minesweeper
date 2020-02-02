@@ -9,16 +9,19 @@
   </head>
 
   <body>
-    <div class="inline">
-      <label>Select Board Size</label>
-      <select id="tileCount">
+    <h2>Minesweeper</h2>
+    <div class="inline actionBar">
+      <label>Select Board Size &nbsp;</label>
+      <select class="gameButton" id="tileCount">
         <option value="5">5 X 5</option>
         <option value="7">7 X 7</option>
         <option selected value="10">10 X 10</option>
         <option value="15">15 X 15</option>
       </select>
-      <button id="gameStart">New Game</button>
-    <div id="gameBoard"/>
+      <button class="gameButton" id="gameStart">New Game</button>
+    </div>
+    <div class="gameSection" id="gameMessage"></div>
+    <div class="gameSection" id="gameBoard"></div>
   </body>
 
 </html>
