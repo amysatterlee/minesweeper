@@ -4,6 +4,7 @@ $(function(){
   let tileCount = 10;
   let gameStatus = 'ready';
   let tileRemaining = 100;
+  let mineToggle = false;
 
   const randomNum = (max) => {
     return Math.floor(Math.random() * max);
@@ -45,6 +46,7 @@ $(function(){
     $("#gameMessage").removeClass("successText");
     $("#gameMessage").removeClass("failureText");
     $("#gameMessage").text(`Number of Mines: ${numMines}`);
+    $("#mineMarker").removeClass('hidden');
     for (i = 0; i < tileCount; i++) {
       $("#gameBoard").append(`<span id="boardGameRow_${i}" class="inline"/></br>`);
       for (j = 0; j < tileCount; j++) {
@@ -136,6 +138,14 @@ $(function(){
   }
 
   let renderBoard = () => {
+    $('#mineMarker').click(() => {
+      mineToggle = !mineToggle;
+      if (mineToggle) {
+        $(this).addClass('pressedButton');
+      } else {
+        $(this).removeClass('pressedButton');
+      }
+    });
     for (let i = 0; i < tileCount; i++) {
       // using let here is important to ensure the correct values of i and j are used
       // this is due to closure (let declares the variable to the scope of the loop instead of globally)
@@ -148,8 +158,13 @@ $(function(){
         // this is so the div does not adjust when appending text later.  So, start with an empty placeholder so nothing
         // shifts in the DOM when updating this text
           if (gameStatus === 'ready') {
-            switch(squares[idx].status) {
-              case 'covered':
+            if (squares[idx].status === 'covered') {
+              if (mineToggle) {
+                // place a flag on the tile to mark a mine
+                $(this).addClass('mineButton');
+                $(this).removeClass('greenSquare');
+                squares[idx].status = 'marked';
+              } else {
                 // clicking on this without a marker in play will result in an exposed tile
                 if (squares[idx].mine) {
                   // blow up; game over
@@ -158,6 +173,7 @@ $(function(){
                   $(this).removeClass('greenSquare');
                   $('#gameMessage').addClass('failureText');
                   $('#gameMessage').text('Game Over - You Stepped on a Mine!');
+                  $('#mineMarker').addClass('hidden');
                 } else {
                   let emptyTile = exposeTile(idx);
                   if (emptyTile) {
@@ -168,11 +184,15 @@ $(function(){
                     gameStatus = 'over';
                     $('#gameMessage').addClass('successText');
                     $('#gameMessage').text('Congratulations! You avoided all of the mines!');
+                    $('#mineMarker').addClass('hidden');
                   }
                 }
-                break;
-              case 'marked':
-                break;
+              }
+            } else if (squares[idx].status === 'marked' && mineToggle) {
+              // remove the flag
+              $(this).removeClass('mineButton');
+              $(this).addClass('greenSquare');
+              squares[idx].status = 'covered';
             }
           }
         });
