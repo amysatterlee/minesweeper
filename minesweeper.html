@@ -8,8 +8,11 @@
     <link rel="stylesheet" type="text/css" href="minesweeper.css">
   </head>
 
-  <body>
+  <body oncontextmenu="return false;">
     <h2>Minesweeper</h2>
+    <p>To win the game, clear all playable tiles without landing on a mine.</p>
+    <p>To clear a tile, click on it.  To mark a tile (or remove a mark), right click on it.</p>
+    <p>If a cleared tile contains a number, that number represents the number of mines touching that tile.</p>
     <div class="inline actionBar">
       <label>Select Board Size &nbsp;</label>
       <select class="gameButton" id="tileCount">
@@ -20,9 +23,7 @@
       </select>
       <button class="gameButton" id="gameStart">New Game</button>
     </div>
-    <div class="gameSection">
-      <span><div class='inline' id="gameMessage"></div><button class='mineButton mar-l40 inline hidden' id='mineMarker'></button></span>
-    </div>
+    <div class="gameSection" id="gameMessage"></div>
     <div class="gameSection" id="gameBoard"></div>
   </body>
 

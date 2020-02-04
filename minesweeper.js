@@ -33,20 +33,22 @@ $(function(){
     return count;
   }
 
-  let resetBoard = () => {
-    // this function clears the game board and resets the squares object
-    // the squares object holds an entry for each tile index and status of that tile
+  const resetBoard = () => {
+    // this function will clear all game messages, reset the game status, etc
     $("#gameBoard").empty(); // remove all children from gameBoard
-    gameStatus = 'ready';
-    const mines = getMineLocations();
+    gameStatus = 'ready'
+    $("#gameMessage").removeClass("successText");
+    $("#gameMessage").removeClass("failureText");
+  }
+
+  const renderBoard = () => {
+    // the squares object holds an entry for each tile index and status of that tile
     tileCount = $("#tileCount").val();
     tileCount = parseInt(tileCount);
     tileRemaining = tileCount * tileCount;
     numMines = Math.floor(0.15 * tileRemaining);
-    $("#gameMessage").removeClass("successText");
-    $("#gameMessage").removeClass("failureText");
+    const mines = getMineLocations();
     $("#gameMessage").text(`Number of Mines: ${numMines}`);
-    $("#mineMarker").removeClass('hidden');
     for (i = 0; i < tileCount; i++) {
       $("#gameBoard").append(`<span id="boardGameRow_${i}" class="inline"/></br>`);
       for (j = 0; j < tileCount; j++) {
@@ -60,6 +62,7 @@ $(function(){
         };
       }
     }
+    setUpTiles();
   }
 
   const getSurroundingTiles = (idx, row, col) => {
@@ -137,15 +140,21 @@ $(function(){
     return emptyTile;
   }
 
-  let renderBoard = () => {
-    $('#mineMarker').click(() => {
-      mineToggle = !mineToggle;
-      if (mineToggle) {
-        $(this).addClass('pressedButton');
-      } else {
-        $(this).removeClass('pressedButton');
-      }
-    });
+  const toggleMineMarker = (idx) => {
+    if (squares[idx].status === 'marked') {
+      // remove the flag
+      $(`#boardGameCol_${idx}`).removeClass('flagMarker');
+      $(`#boardGameCol_${idx}`).addClass('greenSquare');
+      squares[idx].status = 'covered';
+    } else {
+      // add the flag
+      $(`#boardGameCol_${idx}`).addClass('flagMarker');
+      $(`#boardGameCol_${idx}`).removeClass('greenSquare');
+      squares[idx].status = 'marked';
+    }
+  }
+
+  const setUpTiles = () => {
     for (let i = 0; i < tileCount; i++) {
       // using let here is important to ensure the correct values of i and j are used
       // this is due to closure (let declares the variable to the scope of the loop instead of globally)
@@ -153,46 +162,36 @@ $(function(){
       for (let j = 0; j < tileCount; j++) {
         let idx = (i * tileCount) + j;
         $(`#boardGameRow_${i}`).append(`<div class="boardSquare greenSquare" id="boardGameCol_${idx}"><p id="tile_${idx}" class="inline hidden">0</p></div>`);
-        $(`#boardGameCol_${idx}`).click(function(){
+        $(`#boardGameCol_${idx}`).mousedown((e) => {
         // each tile's text is represented by a p element with id = tile_${idx} and is initially hidden
         // this is so the div does not adjust when appending text later.  So, start with an empty placeholder so nothing
         // shifts in the DOM when updating this text
+          const mouseClick = e.which == 1 ? 'left' : 'right';
           if (gameStatus === 'ready') {
-            if (squares[idx].status === 'covered') {
-              if (mineToggle) {
-                // place a flag on the tile to mark a mine
-                $(this).addClass('mineButton');
-                $(this).removeClass('greenSquare');
-                squares[idx].status = 'marked';
+            if (mouseClick === 'right') {
+              // place a flag on the tile to mark a mine
+              toggleMineMarker(idx);
+            } else if (squares[idx].status === 'covered') {
+              // clicking on this without a marker in play will result in an exposed tile
+              if (squares[idx].mine) {
+                // blow up; game over
+                gameStatus = 'over';
+                $(`#boardGameCol_${idx}`).addClass('bombSquare');
+                $(`#boardGameCol_${idx}`).removeClass('greenSquare');
+                $('#gameMessage').addClass('failureText');
+                $('#gameMessage').text('Game Over - You Stepped on a Mine!');
               } else {
-                // clicking on this without a marker in play will result in an exposed tile
-                if (squares[idx].mine) {
-                  // blow up; game over
+                let emptyTile = exposeTile(idx);
+                if (emptyTile) {
+                  getAndExposeSurroundingTiles(idx);
+                }
+                if (numMines === tileRemaining) {
+                  // the tiles left covered equal the number of mines - game over
                   gameStatus = 'over';
-                  $(this).addClass('bombSquare');
-                  $(this).removeClass('greenSquare');
-                  $('#gameMessage').addClass('failureText');
-                  $('#gameMessage').text('Game Over - You Stepped on a Mine!');
-                  $('#mineMarker').addClass('hidden');
-                } else {
-                  let emptyTile = exposeTile(idx);
-                  if (emptyTile) {
-                    getAndExposeSurroundingTiles(idx);
-                  }
-                  if (numMines === tileRemaining) {
-                    // the tiles left covered equal the number of mines - game over
-                    gameStatus = 'over';
-                    $('#gameMessage').addClass('successText');
-                    $('#gameMessage').text('Congratulations! You avoided all of the mines!');
-                    $('#mineMarker').addClass('hidden');
-                  }
+                  $('#gameMessage').addClass('successText');
+                  $('#gameMessage').text('Congratulations! You avoided all of the mines!');
                 }
               }
-            } else if (squares[idx].status === 'marked' && mineToggle) {
-              // remove the flag
-              $(this).removeClass('mineButton');
-              $(this).addClass('greenSquare');
-              squares[idx].status = 'covered';
             }
           }
         });
