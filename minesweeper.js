@@ -141,6 +141,7 @@ $(function(){
   }
 
   const toggleMineMarker = (idx) => {
+    if (squares[idx].status === 'exposed') { return; }
     if (squares[idx].status === 'marked') {
       // remove the flag
       $(`#boardGameCol_${idx}`).removeClass('flagMarker');
